@@ -130,25 +130,47 @@ The integration is organized into eight main tool categories:
 
 ## Installation
 
-### Installing via Smithery
+### Quick Start with NPX (Recommended)
 
-To install azuredevops-mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@RyanCardin15/azuredevops-mcp):
+The easiest way to use the Azure DevOps MCP server is via NPX:
 
+```bash
+npx @ryancardin/azuredevops-mcp-server
+```
+
+No installation or build steps required! Just set your environment variables and run.
+
+### One-Click Installation for Cursor
+
+Click the button below to install the Azure DevOps MCP server directly in Cursor:
+
+[![Add Azure DevOps MCP to Cursor](https://img.shields.io/badge/Add%20to-Cursor-blue?style=for-the-badge)](cursor://anysphere.cursor-deeplink/mcp/install?name=azure-devops&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyJAcnlhbmNhcmRpbi9henVyZWRldm9wcy1tY3Atc2VydmVyIl0sImVudiI6eyJBWlVSRV9ERVZPUFNFX09SR19VUkwiOiJodHRwczovL2Rldi5henVyZS5jb20veW91ci1vcmdhbml6YXRpb24iLCJBWlVSRV9ERVZPUFNfUFJPSkVDVCI6InlvdXItcHJvamVjdCIsIkFaVVJFX0RFVk9QU19JU19PTl9QUkVNSVNFUyI6ImZhbHNlIiwiQVpVUkVfREVWT1BTX0FVVEhfVFlQRSI6InBhdCIsIkFaVVJFX0RFVk9QU19QRVJTT05BTF9BQ0NFU1NfVE9LRU4iOiJ5b3VyLXBlcnNvbmFsLWFjY2Vzcy10b2tlbiJ9fQ==)
+
+**Important:** After installation in Cursor, you must update the environment variables in your Cursor MCP configuration with your actual Azure DevOps details.
+
+> Learn more about Cursor deeplinks at [https://docs.cursor.com/deeplinks](https://docs.cursor.com/deeplinks)
+
+### Alternative Installation Methods
+
+#### Global NPM Installation
+```bash
+npm install -g @ryancardin/azuredevops-mcp-server
+azuredevops-mcp-server
+```
+
+#### Via Smithery (Claude Desktop)
 ```bash
 npx -y @smithery/cli install @RyanCardin15/azuredevops-mcp --client claude
 ```
 
-### Prerequisites
-- Node.js (v16 or later)
-- TypeScript (v4 or later)
-- An Azure DevOps account with a Personal Access Token (PAT) or appropriate on-premises credentials
+#### Development Setup
 
-### Setup
+For development or customization:
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd AzureDevOps
+   git clone https://github.com/RyanCardin15/AzureDevOps-MCP.git
+   cd AzureDevOps-MCP
    ```
 
 2. Install dependencies:
@@ -156,61 +178,110 @@ npx -y @smithery/cli install @RyanCardin15/azuredevops-mcp --client claude
    npm install
    ```
 
-3. Configure environment variables (create a `.env` file or set them directly):
-
-   For Azure DevOps Services (cloud):
-   ```
-   AZURE_DEVOPS_ORG_URL=https://dev.azure.com/your-organization
-   AZURE_DEVOPS_PROJECT=your-default-project
-   AZURE_DEVOPS_IS_ON_PREMISES=false
-   AZURE_DEVOPS_AUTH_TYPE=pat # or 'entra'
-   AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN=your-personal-access-token
-   ```
-
-   For Azure DevOps Server (on-premises):
-   ```
-   AZURE_DEVOPS_ORG_URL=https://your-server/tfs
-   AZURE_DEVOPS_PROJECT=your-default-project
-   AZURE_DEVOPS_IS_ON_PREMISES=true
-   AZURE_DEVOPS_COLLECTION=your-collection
-   AZURE_DEVOPS_API_VERSION=6.0  # Adjust based on your server version
-
-   # Authentication (choose one):
-   
-   # For PAT authentication:
-   AZURE_DEVOPS_AUTH_TYPE=pat
-   AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN=your-personal-access-token
-
-   # For NTLM authentication:
-   AZURE_DEVOPS_AUTH_TYPE=ntlm
-   AZURE_DEVOPS_USERNAME=your-username
-   AZURE_DEVOPS_PASSWORD=your-password
-   AZURE_DEVOPS_DOMAIN=your-domain
-
-   # For Basic authentication:
-   AZURE_DEVOPS_AUTH_TYPE=basic
-   AZURE_DEVOPS_USERNAME=your-username
-   AZURE_DEVOPS_PASSWORD=your-password
-   ```
-
-4. Build the project:
+3. Build the project:
    ```bash
    npm run build
    ```
 
-   If you encounter TypeScript errors but want to proceed anyway:
+4. Run locally:
    ```bash
-   npm run build:ignore-errors
-   ```
-
-5. Start the server:
-   ```bash
-   npm run start
+   npm start
    ```
 
 ## Configuration
 
-### Personal Access Token (PAT)
+### Prerequisites
+- Node.js (v16 or later) 
+- An Azure DevOps account with a Personal Access Token (PAT) or appropriate credentials
+
+### Environment Variables
+
+Configure the server using environment variables. You can set these in your shell, `.env` file, or in your MCP client configuration:
+
+#### For Azure DevOps Services (Cloud)
+```bash
+AZURE_DEVOPS_ORG_URL=https://dev.azure.com/your-organization
+AZURE_DEVOPS_PROJECT=your-default-project
+AZURE_DEVOPS_IS_ON_PREMISES=false
+AZURE_DEVOPS_AUTH_TYPE=pat
+AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN=your-personal-access-token
+```
+
+#### For Azure DevOps Server (On-Premises)
+```bash
+AZURE_DEVOPS_ORG_URL=https://your-server/tfs
+AZURE_DEVOPS_PROJECT=your-default-project
+AZURE_DEVOPS_IS_ON_PREMISES=true
+AZURE_DEVOPS_COLLECTION=your-collection
+AZURE_DEVOPS_API_VERSION=6.0
+AZURE_DEVOPS_AUTH_TYPE=pat
+AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN=your-personal-access-token
+```
+
+#### Alternative Authentication Methods (On-Premises)
+```bash
+# NTLM Authentication
+AZURE_DEVOPS_AUTH_TYPE=ntlm
+AZURE_DEVOPS_USERNAME=your-username
+AZURE_DEVOPS_PASSWORD=your-password
+AZURE_DEVOPS_DOMAIN=your-domain
+
+# Basic Authentication
+AZURE_DEVOPS_AUTH_TYPE=basic
+AZURE_DEVOPS_USERNAME=your-username
+AZURE_DEVOPS_PASSWORD=your-password
+
+# Entra ID Authentication (requires az CLI)
+AZURE_DEVOPS_AUTH_TYPE=entra
+```
+
+### Client Configuration
+
+#### Cursor Configuration
+
+Add this to your Cursor MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "azure-devops": {
+      "command": "npx",
+      "args": ["@ryancardin/azuredevops-mcp-server"],
+      "env": {
+        "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-organization",
+        "AZURE_DEVOPS_PROJECT": "your-project",
+        "AZURE_DEVOPS_IS_ON_PREMISES": "false",
+        "AZURE_DEVOPS_AUTH_TYPE": "pat",
+        "AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN": "your-personal-access-token"
+      }
+    }
+  }
+}
+```
+
+#### Claude Desktop Configuration
+
+Add this to your Claude Desktop MCP configuration file:
+
+```json
+{
+  "mcpServers": {
+    "azure-devops": {
+      "command": "npx",
+      "args": ["@ryancardin/azuredevops-mcp-server"],
+      "env": {
+        "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-organization",
+        "AZURE_DEVOPS_PROJECT": "your-project",
+        "AZURE_DEVOPS_IS_ON_PREMISES": "false",
+        "AZURE_DEVOPS_AUTH_TYPE": "pat",
+        "AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN": "your-personal-access-token"
+      }
+    }
+  }
+}
+```
+
+### Creating a Personal Access Token (PAT)
 
 For Azure DevOps Services (cloud), you'll need to create a Personal Access Token with appropriate permissions:
 
@@ -225,62 +296,9 @@ For Azure DevOps Services (cloud), you'll need to create a Personal Access Token
    - Build: Read
    - Release: Read
 
-For Azure DevOps Server (on-premises), you have three authentication options:
+For Azure DevOps Server (on-premises), create the PAT in your on-premises instance following similar steps.
 
-1. Personal Access Token (PAT):
-   - Similar to cloud setup, but create the PAT in your on-premises instance
-   - Set `AZURE_DEVOPS_AUTH_TYPE=pat`
-
-2. NTLM Authentication:
-   - Use your Windows domain credentials
-   - Set `AZURE_DEVOPS_AUTH_TYPE=ntlm`
-   - Provide username, password, and domain
-
-3. Basic Authentication:
-   - Use your local credentials
-   - Set `AZURE_DEVOPS_AUTH_TYPE=basic`
-   - Provide username and password
-
-### Azure DevOps Services vs. Azure DevOps Server
-
-This integration supports both cloud-hosted Azure DevOps Services and on-premises Azure DevOps Server:
-
-#### Azure DevOps Services (Cloud)
-- Simple setup with organization URL and PAT
-- Default configuration expects format: `https://dev.azure.com/your-organization`
-- Always uses PAT authentication
-- Sample configuration files provided in `.env.cloud.example`
-
-#### Azure DevOps Server (On-Premises)
-- Requires additional configuration for server URL, collection, and authentication
-- URL format varies based on your server setup: `https://your-server/tfs`
-- Requires specifying a collection name
-- Supports multiple authentication methods (PAT, NTLM, Basic)
-- May require API version specification for older server versions
-- Sample configuration files provided in `.env.on-premises.example`
-
-#### Key Differences
-
-| Feature | Azure DevOps Services | Azure DevOps Server |
-|---------|----------------------|---------------------|
-| URL Format | https://dev.azure.com/org | https://server/tfs |
-| Collection | Not required | Required |
-| Auth Methods | PAT, Entra ID (DefaultAzureCredential) | PAT, NTLM, Basic |
-| API Version | Latest (automatic) | May need specification |
-| Connection | Always internet | Can be air-gapped |
-
-#### Entra Auth
-
-Ensure you have az cli installed and it is authenticated.
-azd and AZ Powershell modules should also work, as long as you're authenticated.
-
-#### Example Configuration
-
-Copy either `.env.cloud.example` or `.env.on-premises.example` to `.env` and update the values as needed.
-
-### Environment Variables
-
-The server can be configured using the following environment variables:
+### Complete Environment Variables Reference
 
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
@@ -296,7 +314,7 @@ The server can be configured using the following environment variables:
 | AZURE_DEVOPS_DOMAIN | Domain for NTLM auth | No | - |
 | ALLOWED_TOOLS | Comma-separated list of tool methods to enable | No | All tools |
 
-\* Required if `AZURE_DEVOPS_IS_ON_PREMISES=true`
+\* Required if `AZURE_DEVOPS_IS_ON_PREMISES=true`  
 \** Required based on chosen authentication type
 
 #### Tool Filtering with ALLOWED_TOOLS
@@ -311,6 +329,15 @@ ALLOWED_TOOLS=listWorkItems,getWorkItemById,searchWorkItems,createWorkItem
 ```
 
 This would only enable the specified work item methods while disabling all others.
+
+#### Entra ID Authentication
+
+For Entra ID authentication, ensure you have Azure CLI installed and authenticated:
+```bash
+az login
+```
+
+The server supports AZ CLI, AZD, and Azure PowerShell modules as long as you're authenticated.
 
 ## Usage
 
