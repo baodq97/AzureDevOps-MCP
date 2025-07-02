@@ -135,7 +135,7 @@ The integration is organized into eight main tool categories:
 The easiest way to use the Azure DevOps MCP server is via NPX:
 
 ```bash
-npx @ryancardin/azuredevops-mcp-server
+npx @ryancardin/azuredevops-mcp-server@latest
 ```
 
 No installation or build steps required! Just set your environment variables and run.
@@ -144,7 +144,7 @@ No installation or build steps required! Just set your environment variables and
 
 Click the button below to install the Azure DevOps MCP server directly in Cursor:
 
-[![Add Azure DevOps MCP to Cursor](https://img.shields.io/badge/Add%20to-Cursor-blue?style=for-the-badge)](cursor://anysphere.cursor-deeplink/mcp/install?name=azure-devops&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyJAcnlhbmNhcmRpbi9henVyZWRldm9wcy1tY3Atc2VydmVyIl0sImVudiI6eyJBWlVSRV9ERVZPUFNFX09SR19VUkwiOiJodHRwczovL2Rldi5henVyZS5jb20veW91ci1vcmdhbml6YXRpb24iLCJBWlVSRV9ERVZPUFNfUFJPSkVDVCI6InlvdXItcHJvamVjdCIsIkFaVVJFX0RFVk9QU19JU19PTl9QUkVNSVNFUyI6ImZhbHNlIiwiQVpVUkVfREVWT1BTX0FVVEhfVFlQRSI6InBhdCIsIkFaVVJFX0RFVk9QU19QRVJTT05BTF9BQ0NFU1NfVE9LRU4iOiJ5b3VyLXBlcnNvbmFsLWFjY2Vzcy10b2tlbiJ9fQ==)
+[![Add Azure DevOps MCP to Cursor](https://img.shields.io/badge/Add%20to-Cursor-blue?style=for-the-badge)](cursor://anysphere.cursor-deeplink/mcp/install?name=azure-devops&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyJAcnlhbmNhcmRpbi9henVyZWRldm9wcy1tY3Atc2VydmVyQGxhdGVzdCJdLCJlbnYiOnsiQVpVUkVfREVWT1BTX09SR19VUkwiOiJodHRwczovL2Rldi5henVyZS5jb20veW91ci1vcmdhbml6YXRpb24iLCJBWlVSRV9ERVZPUFNfUFJPSkVDVCI6InlvdXItcHJvamVjdCIsIkFaVVJFX0RFVk9QU19JU19PTl9QUkVNSVNFUyI6ImZhbHNlIiwiQVpVUkVfREVWT1BTX0FVVEhfVFlQRSI6InBhdCIsIkFaVVJFX0RFVk9QU19QRVJTT05BTF9BQ0NFU1NfVE9LRU4iOiJ5b3VyLXBlcnNvbmFsLWFjY2Vzcy10b2tlbiJ9fQo=)
 
 **Important:** After installation in Cursor, you must update the environment variables in your Cursor MCP configuration with your actual Azure DevOps details.
 
@@ -246,7 +246,7 @@ Add this to your Cursor MCP settings:
   "mcpServers": {
     "azure-devops": {
       "command": "npx",
-      "args": ["@ryancardin/azuredevops-mcp-server"],
+      "args": ["@ryancardin/azuredevops-mcp-server@latest"],
       "env": {
         "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-organization",
         "AZURE_DEVOPS_PROJECT": "your-project",
@@ -268,7 +268,7 @@ Add this to your Claude Desktop MCP configuration file:
   "mcpServers": {
     "azure-devops": {
       "command": "npx",
-      "args": ["@ryancardin/azuredevops-mcp-server"],
+      "args": ["@ryancardin/azuredevops-mcp-server@latest"],
       "env": {
         "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-organization",
         "AZURE_DEVOPS_PROJECT": "your-project",
