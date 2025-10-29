@@ -28,6 +28,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
 import * as http from 'http';
 import * as fs from 'fs';
@@ -46,6 +47,7 @@ import { ArtifactManagementTools } from './Tools/ArtifactManagementTools';
 import { AIAssistedDevelopmentTools } from './Tools/AIAssistedDevelopmentTools';
 import { EntraAuthHandler } from './Services/EntraAuthHandler';
 import { AzureDevOpsConfig } from './Interfaces/AzureDevOps';
+import { randomUUID } from 'node:crypto';
 
 /**
  * Try to load environment variables from .env file with multiple possible locations
@@ -2263,13 +2265,11 @@ async function main() {
 
   // Create Express app
   const app = express();
-
+  app.use(express.json());
   // Middleware pipeline - easily configurable and extensible
   app.use(cors()); // CORS support
   app.use(createLoggingMiddleware()); // Request logging
   app.use(createRateLimitMiddleware(60000, 100)); // Rate limiting: 100 requests per minute
-  app.use(bodyParser.json({ limit: '50mb' })); // Parse JSON bodies
-  app.use(bodyParser.urlencoded({ extended: true })); // Parse URL-encoded bodies
   app.use(createAuthMiddleware(apiKey, requireApiKey)); // Authentication middleware
 
   // Health check endpoint
@@ -2303,7 +2303,7 @@ async function main() {
       description: 'MCP server for Azure DevOps integration providing access to work items, repositories, projects, boards, and sprints',
       repository: 'https://github.com/RyanCardin15/AzureDevOps-MCP',
       endpoints: {
-        mcp: `http://${requestHost}/mcp`,
+        mcp: `http://${requestHost}/mcp (supports both SSE and StreamableHTTP)`,
         health: `http://${requestHost}/health`,
         config: `http://${requestHost}/config`,
       },
@@ -2318,9 +2318,9 @@ async function main() {
       requiredHeaders: ['x-azure-devops-org-url', 'x-azure-devops-project', 'x-azure-devops-pat'],
       optionalHeaders: ['x-api-key', 'x-azure-devops-allowed-tools', 'x-azure-devops-auth-type', 'x-azure-devops-is-on-premises', 'accept'],
       transport: {
-        sse: '/mcp (GET with Accept: text/event-stream)',
-        messages: '/mcp/messages?sessionId=<id> (POST)',
-        note: 'Uses Server-Sent Events (SSE) transport only. Streamable HTTP transport is not supported. Clients will automatically fall back to SSE if they try streamableHttp first.',
+        unified: '/mcp (GET for SSE, POST for StreamableHTTP)',
+        messages: '/mcp/messages?sessionId=<id> (POST for SSE messages)',
+        note: 'Unified endpoint supporting both SSE and StreamableHTTP transports. Auto-detects transport type based on HTTP method. Modern clients should use POST for StreamableHTTP.',
       },
       pipeline: {
         description: 'Express.js middleware pipeline for flexible configuration',
@@ -2474,13 +2474,11 @@ async function main() {
     });
   });
 
-  // Store active MCP server instances and transports
-  const activeConnections = new Map<string, { server: McpServer; transport: SSEServerTransport; cleanup: () => void }>();
+  // Store active MCP server instances and transports for different transport types
+  const activeSSEConnections = new Map<string, { server: McpServer; transport: SSEServerTransport; cleanup: () => void }>();
 
-  // MCP endpoint using SSE transport
-  // This endpoint establishes an SSE connection for MCP protocol communication
-  // Note: Only supports GET requests for SSE. POST requests (for streamableHttp) will fail with 404.
-  app.get('/mcp', createConfigMiddleware(), async (req, res) => {
+  // Unified MCP endpoint supporting both SSE and StreamableHTTP transports
+  app.post('/mcp', createConfigMiddleware(), async (req, res) => {
     try {
       const config = (req as any).azureDevOpsConfig as AzureDevOpsConfig;
       const allowedTools = (req as any).allowedTools as Set<string>;
@@ -2488,41 +2486,27 @@ async function main() {
       // Create MCP server instance for this session
       const server = await createServerInstance(config, allowedTools);
 
-      // Use SSE transport (the only transport available in this SDK version)
-      const transport = new SSEServerTransport('/mcp/messages', res);
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined,
+        enableJsonResponse: true,
+      });
 
-      // Get the session ID from the transport (auto-generated)
       const sessionId = transport.sessionId;
-      console.log(`Using SSE transport for session ${sessionId}`);
-
-      // Clean up existing connection for this session if it exists
-      const existingConnection = activeConnections.get(sessionId);
-      if (existingConnection) {
-        existingConnection.cleanup();
-        activeConnections.delete(sessionId);
-      }
-
-      // Store connection for cleanup
-      const cleanup = () => {
-        try {
-          transport.close();
-        } catch (error) {
-          console.error('Error closing SSE transport:', error);
-        }
-      };
-
-      activeConnections.set(sessionId, { server, transport, cleanup });
+      console.log(`Using StreamableHTTP transport for session ${sessionId}`);
 
       // Handle cleanup on connection close
       res.on('close', () => {
-        console.log(`SSE connection closed for session ${sessionId}`);
-        cleanup();
-        activeConnections.delete(sessionId);
+        console.log(`StreamableHTTP connection closed for session ${sessionId}`);
+        try {
+          transport.close();
+        } catch (error) {
+          console.error('Error closing StreamableHTTP transport:', error);
+        }
       });
 
-      // Connect server to transport (this automatically calls transport.start())
+      // Connect server to transport and handle request
       await server.connect(transport);
-      console.log(`SSE MCP server connected for session ${sessionId}`);
+      await transport.handleRequest(req, res, req.body);
     } catch (error) {
       console.error('Error creating MCP server instance:', error);
       if (!res.headersSent) {
@@ -2535,8 +2519,48 @@ async function main() {
     }
   });
 
+  app.get('/sse', createConfigMiddleware(), async (req, res) => {
+    const config = (req as any).azureDevOpsConfig as AzureDevOpsConfig;
+    const allowedTools = (req as any).allowedTools as Set<string>;
+
+    // Create MCP server instance for this session
+    const server = await createServerInstance(config, allowedTools);
+    const transport = new SSEServerTransport('/sse/messages', res);
+    const sessionId = transport.sessionId;
+    console.log(`Using SSE transport for session ${sessionId}`);
+
+    // Clean up existing connection for this session if it exists
+    const existingConnection = activeSSEConnections.get(sessionId);
+    if (existingConnection) {
+      existingConnection.cleanup();
+      activeSSEConnections.delete(sessionId);
+    }
+
+    // Store connection for cleanup
+    const cleanup = () => {
+      try {
+        transport.close();
+      } catch (error) {
+        console.error('Error closing SSE transport:', error);
+      }
+    };
+
+    activeSSEConnections.set(sessionId, { server, transport, cleanup });
+
+    // Handle cleanup on connection close
+    res.on('close', () => {
+      console.log(`SSE connection closed for session ${sessionId}`);
+      cleanup();
+      activeSSEConnections.delete(sessionId);
+    });
+
+    // Connect server to transport
+    await server.connect(transport);
+    console.log(`SSE MCP server connected for session ${sessionId}`);
+  });
+
   // SSE message endpoint
-  app.post('/mcp/messages', async (req, res) => {
+  app.post('/sse/messages', async (req, res) => {
     const sessionId = req.query.sessionId as string;
 
     if (!sessionId) {
@@ -2547,7 +2571,7 @@ async function main() {
       });
     }
 
-    const connection = activeConnections.get(sessionId);
+    const connection = activeSSEConnections.get(sessionId);
     if (!connection) {
       return res.status(404).json({
         error: 'Not Found',
@@ -2574,6 +2598,8 @@ async function main() {
   const server = app.listen(port, host, () => {
     console.log(`✅ Server running on http://${host}:${port}`);
     console.log(`📡 MCP endpoint: http://${host}:${port}/mcp`);
+    console.log(`   • Supports both SSE (GET) and StreamableHTTP (POST) transports`);
+    console.log(`   • Auto-detects transport type based on request method`);
     console.log(`🏥 Health check: http://${host}:${port}/health (public)`);
     console.log(`📋 Config guide: http://${host}:${port}/config (public)`);
 

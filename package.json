@@ -1,7 +1,7 @@
 {
   "name": "@ryancardin/azuredevops-mcp-server",
   "version": "1.0.3",
-  "description": "MCP server for Azure DevOps integration - provides seamless access to work items, repositories, projects, boards, and sprints",
+  "description": "MCP server for Azure DevOps integration - provides seamless access to work items, repositories, projects, boards, and sprints with StreamableHTTP transport support",
   "main": "dist/index.js",
   "bin": {
     "azuredevops-mcp-server": "dist/index.js",
@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@azure/identity": "^4.0.0",
-    "@modelcontextprotocol/sdk": "^1.6.1",
+    "@modelcontextprotocol/sdk": "^1.20.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
     "azure-devops-node-api": "^14.1.0",
