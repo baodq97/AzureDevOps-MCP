@@ -64,3 +64,6 @@ coverage/
 *.orig
 intelliplan/
 
+dist/
+.specstory/
+.env

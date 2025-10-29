@@ -55,6 +55,7 @@ export interface AzureDevOpsConfig {
   apiVersion?: string; // API version for on-premises
   auth?: AzureDevOpsAuthConfig; // Updated to use the new union type
   entraAuthHandler?: EntraAuthHandler;
+  acceptHeader?: string; // Accept header for HTTP requests (default: 'text/event-stream')
 }
 
 /**

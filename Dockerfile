@@ -16,8 +16,7 @@ COPY . .
 # Build the project
 RUN npm run build
 
-# Expose port if required (here assuming port 3000, adjust if needed)
-EXPOSE 3000
+EXPOSE 8080
 
 # Start the server
-CMD [ "npm", "run", "start" ]
+CMD [ "npm", "run", "start:remote" ]

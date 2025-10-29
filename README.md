@@ -7,7 +7,36 @@ A powerful integration for Azure DevOps that provides seamless access to work it
 
 ## Overview
 
-This server provides a convenient API for interacting with Azure DevOps services, enabling AI assistants and other tools to manage work items, code repositories, boards, sprints, and more. Built with the Model Context Protocol, it provides a standardized interface for communicating with Azure DevOps.
+A production-ready MCP (Model Context Protocol) server for Azure DevOps integration. Provides secure, scalable access to work items, repositories, projects, boards, sprints, and DevOps tools through standardized MCP protocol.
+
+### Key Features
+- 🔐 **Security First**: API key authentication, input validation, CORS support
+- 📡 **Unified Transport**: Single endpoint supporting both SSE and HTTP streaming
+- 🏗️ **Production Ready**: Health checks, graceful shutdown, environment-based configuration
+- 🔧 **Flexible Deployment**: Local development and remote server modes
+- 📊 **Monitoring**: Built-in health endpoints and configuration guides
+
+## Server Endpoints
+
+The MCP server provides multiple endpoints for different purposes:
+
+### MCP Endpoint
+- **URL**: `http://localhost:8080/mcp`
+- **Purpose**: Main MCP protocol endpoint
+- **Transport**: Unified (auto-detects SSE vs HTTP streaming)
+- **Authentication**: API key (if enabled)
+
+### Health Check
+- **URL**: `http://localhost:8080/health`
+- **Purpose**: Service health monitoring
+- **Authentication**: None required
+- **Response**: `{"status": "healthy", "service": "azure-devops-mcp", "version": "1.0.0"}`
+
+### Configuration Guide
+- **URL**: `http://localhost:8080/config` (or `/`)
+- **Purpose**: Dynamic configuration documentation
+- **Authentication**: None required
+- **Response**: Complete API reference with current server settings
 
 ## Demo
 ![Azure DevOps MCP Demo](AdoMcpDemo.gif)
@@ -135,6 +164,15 @@ The integration is organized into eight main tool categories:
 The easiest way to use the Azure DevOps MCP server is via NPX:
 
 ```bash
+# Basic setup (no authentication)
+export AZURE_DEVOPS_ORG_URL="https://dev.azure.com/your-org"
+export AZURE_DEVOPS_PROJECT="your-project"
+export AZURE_DEVOPS_PERSONAL_ACCESS_TOKEN="your-pat-token"
+npx @ryancardin/azuredevops-mcp-server@latest
+
+# With API key authentication (recommended for production)
+export MCP_API_KEY="your-secret-api-key"
+export MCP_REQUIRE_API_KEY="true"
 npx @ryancardin/azuredevops-mcp-server@latest
 ```
 
@@ -196,7 +234,8 @@ For development or customization:
 
 ### Environment Variables
 
-Configure the server using environment variables. You can set these in your shell, `.env` file, or in your MCP client configuration:
+Configure the server using environment variables. You can set these in your shell, `.env` file, or in your MCP client configuration.
+
 
 #### For Azure DevOps Services (Cloud)
 ```bash
@@ -313,6 +352,8 @@ For Azure DevOps Server (on-premises), create the PAT in your on-premises instan
 | AZURE_DEVOPS_PASSWORD | Password for NTLM/Basic auth | No** | - |
 | AZURE_DEVOPS_DOMAIN | Domain for NTLM auth | No | - |
 | ALLOWED_TOOLS | Comma-separated list of tool methods to enable | No | All tools |
+| MCP_API_KEY | API key for server authentication | No | - |
+| MCP_REQUIRE_API_KEY | Require x-api-key header for all requests | No | false |
 
 \* Required if `AZURE_DEVOPS_IS_ON_PREMISES=true`  
 \** Required based on chosen authentication type
@@ -339,9 +380,43 @@ az login
 
 The server supports AZ CLI, AZD, and Azure PowerShell modules as long as you're authenticated.
 
+#### API Key Authentication
+
+For additional security, you can enable API key authentication for MCP requests:
+
+```bash
+# Set API key (optional)
+export MCP_API_KEY="your-secret-api-key"
+
+# Make API key mandatory for MCP requests
+export MCP_REQUIRE_API_KEY="true"
+```
+
+When enabled, clients must include the `x-api-key` header in MCP requests:
+
+```javascript
+const headers = {
+  'x-api-key': 'your-secret-api-key',
+  'x-azure-devops-org-url': 'https://dev.azure.com/your-org',
+  'x-azure-devops-project': 'your-project',
+  'x-azure-devops-pat': 'your-pat-token'
+};
+```
+
+**Note**: Public endpoints (`/health`, `/config`, `/`) do not require authentication.
+
+If `MCP_REQUIRE_API_KEY=true` and the API key is missing or invalid for MCP requests, the server will return a 401 Unauthorized error.
+
 ## Usage
 
 Once the server is running, you can interact with it using the MCP protocol. The server exposes several tools for different Azure DevOps functionalities.
+
+### Server Management
+
+The server provides additional endpoints for monitoring and configuration:
+
+- **Health Check**: `GET /health` - Check server status
+- **Configuration Guide**: `GET /config` or `GET /` - View current configuration and API reference
 
 ### Available Tools
 

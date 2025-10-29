@@ -58,6 +58,7 @@ export function getAzureDevOpsConfig(): AzureDevOpsConfig {
   const isOnPremises = process.env.AZURE_DEVOPS_IS_ON_PREMISES === 'true';
   const collection = process.env.AZURE_DEVOPS_COLLECTION;
   const apiVersion = process.env.AZURE_DEVOPS_API_VERSION;
+  const acceptHeader = process.env.AZURE_DEVOPS_ACCEPT_HEADER || 'text/event-stream';
   
   // Basic validation
   if (!orgUrl || !project) {
@@ -127,6 +128,7 @@ export function getAzureDevOpsConfig(): AzureDevOpsConfig {
     isOnPremises,
     collection,
     apiVersion,
+    acceptHeader,
     ...(auth && { auth })
   };
 }
